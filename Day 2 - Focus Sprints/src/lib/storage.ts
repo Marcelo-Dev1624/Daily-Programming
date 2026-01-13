@@ -1,31 +1,34 @@
-import type { Sprint } from "../types";
+import { SprintsSchema, type Sprint } from "../domain/sprint";
 
 
-const KEY = "focus_sprints_v1";
+const STORAGE_KEY = "focus_sprints_v1";
 
 export function loadSprints(): Sprint[] {
   try {
-    const raw = localStorage.getItem(KEY);
+    const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
 
     const parsed = JSON.parse(raw);
+    const res = SprintsSchema.safeParse(parsed);
 
-    if (!Array.isArray(parsed)) return [];
+    if (res.success) return res.data;
 
-    // Filtrado defensivo (muy buena práctica)
-    return parsed.filter(
-      (s): s is Sprint =>
-        typeof s === "object" &&
-        typeof s.id === "string" &&
-        typeof s.finishedAtISO === "string" &&
-        typeof s.durationMin === "number"
-    );
+    localStorage.removeItem(STORAGE_KEY);
+    return [];
   } catch {
-    // Si el JSON está corrupto, no rompemos la app
+    localStorage.removeItem(STORAGE_KEY);
     return [];
   }
 }
 
-export function saveSprints(sprints: Sprint[]): void {
-  localStorage.setItem(KEY, JSON.stringify(sprints));
+export function saveSprints(sprints: Sprint[]) {
+  const res = SprintsSchema.safeParse(sprints);
+
+  if (!res.success) throw new Error("Attempted to save invalid sprints");
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(res.data));
+  }
+
+
+export function clearSprints() {
+  localStorage.removeItem(STORAGE_KEY);
 }

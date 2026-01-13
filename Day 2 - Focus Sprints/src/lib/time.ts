@@ -1,6 +1,5 @@
 export function formatMMSS(totalSeconds: number): string {
   const safe = Math.max(0, Math.floor(totalSeconds));
-
   const minutes = Math.floor(safe / 60);
   const seconds = safe % 60;
 
@@ -8,8 +7,4 @@ export function formatMMSS(totalSeconds: number): string {
   const ss = String(seconds).padStart(2, "0");
 
   return `${mm}:${ss}`;
-}
-
-export function isZero(n: number): boolean {
-  return n <= 0;
 }
